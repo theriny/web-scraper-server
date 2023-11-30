@@ -1,0 +1,5 @@
+selenium
+pandas
+schedule
+pytz
+webdriver_manager
