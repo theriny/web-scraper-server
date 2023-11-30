@@ -1,0 +1,1 @@
+worker: python chunk0.py
