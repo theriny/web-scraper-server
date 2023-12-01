@@ -20,6 +20,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
+import os
 
 def send_email(arg1):
     # Email configuration
@@ -121,13 +122,37 @@ def scrape_job():
         #get timestamp
         current_time = get_zone_specific_time('America/New_York')
 
-        #empty dataframe
-        df = pd.DataFrame()
 
-        df['top_headline'] = [top_headline]
-        df['timestamp'] = [current_time]
+        # Determine if resutls.csv already exists
+        file_path = "results.csv"
 
-        df.to_csv('results.csv')
+        if os.path.exists(file_path):
+            print(f"The file {file_path} exists.")
+
+            # read in file
+            df = pd.read_csv(file_path)
+
+            for headlines in headline_txt:
+                if headlines not in list(df['top_headline']):
+                    df.loc[len(df),'top_headline'] = headlines
+                    df.loc[len(df)-1,'timestamp'] = current_time
+
+                else:
+                    print(f'Headline: {headlines} is already present.')
+
+            df.to_csv('results.csv',index=False)
+
+        else:
+            print(f"The file {file_path} does not exist.")
+
+            #empty dataframe
+            df = pd.DataFrame()
+
+
+            df['top_headline'] = [headline_txt]
+            df['timestamp'] = [current_time]
+
+            df.to_csv('results.csv',index=False)
 
 
         send_email('results.csv')
