@@ -6,12 +6,62 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 import time
-#import pandas as pd
+import pandas as pd
 import schedule
 
 
 import datetime
 import pytz
+
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+
+
+def send_email(arg1):
+    # Email configuration
+    sender_email = "therin.young@gmail.com"
+    receiver_email = "ceo@dataexplorers.co"
+    subject = "CSV File Attachment"
+    body = "Please find the attached CSV file."
+
+    # Gmail SMTP server settings
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    smtp_username = "therin.young@gmail.com"
+    smtp_password = "bfzh wjxs gxud nfmg"
+
+    # File to be attached
+    attachment_path = arg1
+
+    # Create the MIME object
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    # Attach the file
+    attachment = open(attachment_path, "rb")
+    base = MIMEBase("application", "octet-stream")
+    base.set_payload((attachment).read())
+    encoders.encode_base64(base)
+    base.add_header("Content-Disposition", f"attachment; filename= {attachment_path}")
+    message.attach(base)
+
+    # Establish a connection to the SMTP server
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+
+        # Send the email
+        server.sendmail(sender_email, receiver_email, message.as_string())
+
+    print("Email sent successfully!")
+
 
 def get_zone_specific_time(zone_name):
     # Get the current time in UTC
@@ -25,13 +75,10 @@ def get_zone_specific_time(zone_name):
 
     return zone_specific_time
 
-# Example usage: Get the current time in New York
-la_time = get_zone_specific_time('America/Los_Angeles')
-print(f"Current time in LA: {la_time}")
 
 
 
-'''
+
 
 def scrape_job():
 
@@ -72,7 +119,18 @@ def scrape_job():
         print(top_headline)
 
         #get timestamp
+        current_time = get_zone_specific_time('America/New_York')
 
+        #empty dataframe
+        df = pd.DataFrame()
+
+        df['top_headline'] = [top_headline]
+        df['timestamp'] = [current_time]
+
+        df.to_csv('results.csv')
+
+
+        send_email('results.csv')
         
         return(top_headline)
     
@@ -93,4 +151,3 @@ while True:
     schedule.run_pending()
     time.sleep(4)
 
-'''
